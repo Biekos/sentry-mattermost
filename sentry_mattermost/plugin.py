@@ -121,7 +121,7 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
     ]
 
     def __init__(self):
-        super().__init__()
+        super(MattermostPlugin, self).__init__()
         logger.info("Mattermost plugin loaded")
 
 
