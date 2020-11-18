@@ -30,13 +30,14 @@ from string import Formatter
 
 logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
 
+logger.info("sentry.integrations.sentry_mattermost.plugin")
 
 def get_rules(rules, group, project):
     return ', '.join(rules)
 
 
 def get_tags(event):
-    tag_list = event.get_tags()
+    tag_list = event.tags
     if not tag_list:
         return ()
 
@@ -100,11 +101,11 @@ def request(url, payload):
     return response.read()
 
 
-class Mattermost(CorePluginMixin, notify.NotificationPlugin):
+class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
     title = 'Mattermost'
     slug = 'mattermost'
     description = 'Enables notifications for Mattermost Open Source Chat'
-    version = '0.0.5'
+    version = '0.0.6'
     author = 'Andre Freitas <andre.freitas@ndrive.com>, Guillaume Lastecoueres<px9e@gmx.fr>'
     author_url = 'https://github.com/Biekos/sentry-mattermost'
     required_field = "webhook"
@@ -118,6 +119,11 @@ class Mattermost(CorePluginMixin, notify.NotificationPlugin):
             IntegrationFeatures.ALERT_RULE,
         )
     ]
+
+    def __init__(self):
+        super().__init__()
+        logger.info("Mattermost plugin loaded")
+
 
     def get_config(self, project, **kwargs):
         return [
@@ -167,6 +173,7 @@ class Mattermost(CorePluginMixin, notify.NotificationPlugin):
         project = event.group.project
         debug_mode = self.get_option('debug', project)
         if not self.is_configured(project):
+            logger.info("DEBUG:The project is not correctly configured")
             return
 
         webhook = self.get_option('webhook', project)

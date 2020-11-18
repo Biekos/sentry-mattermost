@@ -22,17 +22,17 @@ from setuptools import setup
 
 setup(
     name="sentry_mattermost",
-    version="0.0.5",
+    version="0.0.6",
     author="Andre Freitas, Guillaume Lastecoueres, Biekos TEAM",
     author_email="andre.freitas@ndrive.com, px9e@gmx.fr, team@biekos.com",
-    description=("A Sentry plugin to send Mattermost notifications."),
+    description="A Sentry plugin to send Mattermost notifications.",
     license="MIT",
     keywords="sentry mattermost devops",
     url="https://github.com/Biekos/sentry-mattermost",
     packages=['sentry_mattermost'],
     entry_points={
        'sentry.plugins': [
-            'mattermost = sentry_mattermost.plugin:Mattermost'
+            'mattermost = sentry_mattermost.plugin:MattermostPlugin'
         ],
     },
 )
