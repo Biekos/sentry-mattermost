@@ -42,7 +42,7 @@ def get_tags(event):
     if not tag_list:
         return ()
 
-    return ', '.join([(tagstore.get_tag_key_label(k), tagstore.get_tag_value_label(k, v))
+    return ', '.join([':'.join(tagstore.get_tag_key_label(k), tagstore.get_tag_value_label(k, v))
             for k, v in tag_list])
 
 
