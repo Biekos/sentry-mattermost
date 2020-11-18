@@ -161,7 +161,7 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
                 "name": "debug",
                 "label": "Debug mode",
                 "type": "bool",
-                "required": False,
+                "required": True,
                 "help": "Enable logging",
             }]
 
