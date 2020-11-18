@@ -31,7 +31,6 @@ from sentry import digests, ratelimits
 
 logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
 
-logger.info("sentry.integrations.sentry_mattermost.plugin")
 
 
 def get_rules(rules, group, project):
@@ -175,6 +174,7 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         webhook = self.get_option('webhook', project)
 
         if debug_mode:
+            logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
             logger.info("DEBUG:webhook used: {}".format(webhook))
         template = self.get_option('template', project)
         if debug_mode:
@@ -194,6 +194,7 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         return "notification"
 
     def should_notify(self, group, event):
+        logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
         logger.info("DEBUG:Should notify?")
         project = event.project
         if not self.is_configured(project):
