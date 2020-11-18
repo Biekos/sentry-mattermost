@@ -27,10 +27,12 @@ from sentry_plugins.base import CorePluginMixin
 from sentry.utils import json
 from sentry.integrations import FeatureDescription, IntegrationFeatures
 from string import Formatter
+from sentry import digests, ratelimits
 
 logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
 
 logger.info("sentry.integrations.sentry_mattermost.plugin")
+
 
 def get_rules(rules, group, project):
     return ', '.join(rules)
@@ -124,7 +126,6 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         super(MattermostPlugin, self).__init__()
         logger.info("Mattermost plugin loaded")
 
-
     def get_config(self, project, **kwargs):
         return [
             {
@@ -169,14 +170,10 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         return bool(self.get_option("webhook", project))
 
     def notify_users(self, group, event, triggering_rules, **kwargs):
-
         project = event.group.project
         debug_mode = self.get_option('debug', project)
-        if not self.is_configured(project):
-            logger.info("DEBUG:The project is not correctly configured")
-            return
-
         webhook = self.get_option('webhook', project)
+
         if debug_mode:
             logger.info("DEBUG:webhook used: {}".format(webhook))
         template = self.get_option('template', project)
@@ -192,3 +189,28 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         if debug_mode:
             logger.info("DEBUG:request executed: {}".format(res))
         return res
+
+    def get_plugin_type(self):
+        return "notification"
+
+    def should_notify(self, group, event):
+        logger.info("DEBUG:Should notify?")
+        project = event.project
+        if not self.is_configured(project):
+            logger.info("DEBUG: No, the project is not correctly configured")
+            return False
+
+        # If the plugin doesn't support digests or they are not enabled,
+        # perform rate limit checks to support backwards compatibility with
+        # older plugins.
+        if not (
+            hasattr(self, "notify_digest") and digests.enabled(project)
+        ) and self.__is_rate_limited(group, event):
+            logger = logging.getLogger(
+                u"sentry.plugins.{0}".format(self.get_conf_key()))
+            logger.info("notification.rate_limited",
+                        extra={"project_id": project.id})
+            logger.info("DEBUG: No, the project has reched rate limitation")
+            return False
+        logger.info("DEBUG: Yes")
+        return True
