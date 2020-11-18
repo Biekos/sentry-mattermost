@@ -42,8 +42,8 @@ def get_tags(event):
     if not tag_list:
         return ()
 
-    return ((tagstore.get_tag_key_label(k), tagstore.get_tag_value_label(k, v))
-            for k, v in tag_list)
+    return ', '.join([(tagstore.get_tag_key_label(k), tagstore.get_tag_value_label(k, v))
+            for k, v in tag_list])
 
 
 class PayloadFactory:
@@ -172,7 +172,6 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         project = event.group.project
         debug_mode = self.get_option('debug', project)
         webhook = self.get_option('webhook', project)
-
         if debug_mode:
             logger = logging.getLogger("sentry.integrations.sentry_mattermost.plugin")
             logger.info("DEBUG:webhook used: {}".format(webhook))
@@ -204,14 +203,18 @@ class MattermostPlugin(CorePluginMixin, notify.NotificationPlugin):
         # If the plugin doesn't support digests or they are not enabled,
         # perform rate limit checks to support backwards compatibility with
         # older plugins.
-        if not (
-            hasattr(self, "notify_digest") and digests.enabled(project)
-        ) and self.__is_rate_limited(group, event):
-            logger = logging.getLogger(
-                u"sentry.plugins.{0}".format(self.get_conf_key()))
-            logger.info("notification.rate_limited",
-                        extra={"project_id": project.id})
-            logger.info("DEBUG: No, the project has reched rate limitation")
-            return False
+        try:
+            if not (
+                hasattr(self, "notify_digest") and digests.enabled(project)
+            ) and self.__is_rate_limited(group, event):
+                logger = logging.getLogger(
+                    u"sentry.plugins.{0}".format(self.get_conf_key()))
+                logger.info("notification.rate_limited",
+                            extra={"project_id": project.id})
+                logger.info("DEBUG: No, the project has reched rate limitation")
+                return False
+        except Exception as e:
+             logger.info("DEBUG: Rate limitation did crashed")
+             logger.info(e)
         logger.info("DEBUG: Yes")
         return True
