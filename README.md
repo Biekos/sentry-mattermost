@@ -1,3 +1,5 @@
+Coucou
+
 # Sentry Mattermost
 A plugin for Sentry to enable notifications to Mattermost Open Source Chat.
 This is based in the sentry-slack plugin: https://github.com/getsentry/sentry-slack
